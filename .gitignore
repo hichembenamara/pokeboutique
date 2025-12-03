@@ -1,0 +1,12 @@
+node_modules
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-store
+.env
+backend/node_modules
+frontend/node_modules
+coverage
+.DS_Store
+.idea
+.vscode
