@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { getCard } from '../api/products';
+import { deleteCard, getCard } from '../api/products';
 import { useCart } from '../hooks/useCart';
+import { useNavigate } from 'react-router-dom';
 
 function ProductDetailPage() {
   const { cardId } = useParams();
@@ -10,6 +11,9 @@ function ProductDetailPage() {
   const [error, setError] = useState(null);
   const [quantity, setQuantity] = useState(1);
   const { addToCart } = useCart();
+  const navigate = useNavigate();
+  const [deleting, setDeleting] = useState(false);
+  const [adminError, setAdminError] = useState('');
 
   useEffect(() => {
     getCard(cardId)
@@ -29,6 +33,23 @@ function ProductDetailPage() {
   if (error || !card) {
     return <p className="text-red-600">Carte introuvable.</p>;
   }
+
+  const handleDelete = async () => {
+    if (!window.confirm('Supprimer définitivement cette carte ?')) {
+      return;
+    }
+    setDeleting(true);
+    setAdminError('');
+    try {
+      await deleteCard(card._id);
+      navigate('/');
+    } catch (err) {
+      const apiError = err?.response?.data?.error || "Impossible de supprimer la carte.";
+      setAdminError(apiError);
+    } finally {
+      setDeleting(false);
+    }
+  };
 
   return (
     <section className="grid gap-8 md:grid-cols-2">
@@ -70,6 +91,15 @@ function ProductDetailPage() {
         >
           Ajouter au panier
         </button>
+        <button
+          type="button"
+          onClick={handleDelete}
+          disabled={deleting}
+          className="rounded-xl border border-red-200 px-6 py-3 text-sm font-semibold text-red-600 disabled:opacity-70"
+        >
+          {deleting ? 'Suppression...' : 'Supprimer la carte'}
+        </button>
+        {adminError ? <p className="text-sm text-red-600">{adminError}</p> : null}
       </div>
     </section>
   );

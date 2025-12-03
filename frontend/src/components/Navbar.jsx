@@ -12,7 +12,7 @@ function Navbar() {
         <Link to="/" className="text-lg font-semibold text-yellow-500">
           PokéBoutique
         </Link>
-        <nav className="flex gap-2">
+        <nav className="flex flex-wrap gap-2">
           <NavLink to="/" className={navClass} end>
             Catalogue
           </NavLink>
@@ -25,6 +25,9 @@ function Navbar() {
                 </span>
               )}
             </span>
+          </NavLink>
+          <NavLink to="/admin/cards/new" className={navClass}>
+            Ajouter une carte
           </NavLink>
         </nav>
       </div>
