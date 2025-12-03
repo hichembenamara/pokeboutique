@@ -25,18 +25,28 @@ async function ensureCart(sessionId) {
     cart = await Cart.create({ sessionId, items: [] });
     await cart.populate('items.card');
   }
+  const validItems = cart.items.filter((item) => Boolean(item.card));
+  if (validItems.length !== cart.items.length) {
+    cart.items = validItems;
+    await cart.save();
+    await cart.populate('items.card');
+  }
   return cart;
 }
 
 function formatCart(cart) {
-  const items = cart.items.map((item) => {
-    const card = item.card?.toObject ? item.card.toObject() : item.card;
-    return {
-      card,
-      quantity: item.quantity,
-      lineTotal: card.price * item.quantity,
-    };
-  });
+  const items = cart.items
+    .filter((item) => Boolean(item.card))
+    .map((item) => {
+      const card = item.card?.toObject ? item.card.toObject() : item.card;
+      const quantity = item.quantity || 0;
+      const lineTotal = Number(card.price || 0) * quantity;
+      return {
+        card,
+        quantity,
+        lineTotal,
+      };
+    });
   const total = items.reduce((sum, item) => sum + item.lineTotal, 0);
   const itemCount = items.reduce((sum, item) => sum + item.quantity, 0);
 

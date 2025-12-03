@@ -63,8 +63,8 @@
 - **3.3 Objectifs qualité** : Couverture globale visée ≥70 % (ref README). Ajout futur d un rapport Vitest/Jest commun et intégration CI.
 
 ## Phase 4 – Infra & exploitation — [En cours]
-- **4.1 Docker Compose** : services `mongo` (volume `mongo-data`), `backend` (port 5000, `MONGO_URI` injecté), `frontend` (port 5173, `VITE_API_URL=http://backend:5000/api`).
-- **4.2 Environnements** : `.env` backend (PORT, MONGO_URI local) + variables injectées par Compose ; les clients se basent sur `import.meta.env.VITE_API_URL`.
+- **4.1 Docker Compose** : services `mongo` (volume `mongo-data`), `backend` (port 5000, `MONGO_URI` injecté), `frontend` (port 5173, proxy `/api` → service `backend` via `VITE_API_PROXY_TARGET`).
+- **4.2 Environnements** : `.env` backend (PORT, MONGO_URI local) + variables injectées par Compose ; côté frontend, les appels passent par `/api` (proxy Vite) sauf si `VITE_API_URL` est explicitement défini pour un déploiement différent.
 - **4.3 Observabilité** : logs HTTP (morgan), messages JSON structurés côté API ; backlog : ajouter Winston + corrélation request-id.
 - **4.4 Automatisation** : scripts d installation/test déjà documentés dans `README`. CI/CD (GitHub Actions) encore à écrire.
 

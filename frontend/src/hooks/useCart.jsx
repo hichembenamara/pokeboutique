@@ -22,10 +22,27 @@ export function CartProvider({ children, initialCart = EMPTY_CART, autoLoad = tr
   const [cart, setCart] = useState(() => normalizeCart(initialCart));
   const [loading, setLoading] = useState(autoLoad);
   const [error, setError] = useState(null);
+  const [toast, setToast] = useState(null);
 
   const updateCartState = useCallback((nextCart) => {
     setCart(normalizeCart(nextCart));
   }, []);
+
+  const showToast = useCallback((message, type = 'success') => {
+    setToast({ id: Date.now(), message, type });
+  }, []);
+
+  const dismissToast = useCallback(() => {
+    setToast(null);
+  }, []);
+
+  useEffect(() => {
+    if (!toast) {
+      return undefined;
+    }
+    const timeout = setTimeout(() => setToast(null), 3000);
+    return () => clearTimeout(timeout);
+  }, [toast]);
 
   const refreshCart = useCallback(async () => {
     setLoading(true);
@@ -55,9 +72,15 @@ export function CartProvider({ children, initialCart = EMPTY_CART, autoLoad = tr
       const updated = await addItemToCart(cardId, quantity);
       updateCartState(updated);
       setError(null);
+      const addedLine = updated.items.find((item) => {
+        const itemId = item.card?._id?.toString();
+        return itemId && itemId === cardId?.toString();
+      });
+      const cardName = addedLine?.card?.name || 'Article';
+      showToast(`${cardName} ajouté au panier`);
       return updated;
     },
-    [updateCartState]
+    [updateCartState, showToast]
   );
 
   const updateQuantity = useCallback(
@@ -100,8 +123,10 @@ export function CartProvider({ children, initialCart = EMPTY_CART, autoLoad = tr
       removeItem,
       checkout,
       refreshCart,
+      toast,
+      dismissToast,
     }),
-    [cart, loading, error, addToCart, updateQuantity, removeItem, checkout, refreshCart]
+    [cart, loading, error, addToCart, updateQuantity, removeItem, checkout, refreshCart, toast, dismissToast]
   );
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
